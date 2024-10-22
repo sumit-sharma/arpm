@@ -1,0 +1,13 @@
+
+
+public function testProcessSpreadSheet()
+{
+    
+        foreach ($data as $item) {
+            $this->assertArrayHasKey('product_code', $item, "product code requirement failed");
+            $this->assertArrayHasKey('quantity', $item, "quantity requirement failed");
+            $this->assertNotEmpty($item['product_code'], "product_code should not be empty");
+            $this->assertIsInt($item['quantity'],  "'quantity' value is should be integer");
+            $this->assertGreaterThan(1, $item['quantity'], "'quantity' value is should be greater than 0");
+        }
+    }

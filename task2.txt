@@ -1,0 +1,66 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Order;
+use App\Models\CartItem;
+use Illuminate\Http\Request;
+
+class OrderController extends Controller
+{
+    public function index()
+    {
+        $orders = Order::with(['customer', 'items', 'lastAddedCart'])->get();
+        $orderData = [];
+
+        foreach ($orders as $order) {
+            $items = $order->items;
+            $totalAmount = 0;
+
+            foreach ($items as $item) {
+                $totalAmount += $item->price * $item->quantity;
+            }
+
+            /* use  lastAddedCart function in Order Model */
+            // $lastAddedToCart = CartItem::where('order_id', $order->id)
+            //     ->orderByDesc('created_at')
+            //     ->first()
+            //     ->created_at ?? null;
+
+
+            $orderData[] = [
+                'order_id' => $order->id,
+                'customer_name' => $order->customer->name,
+                'total_amount' => $totalAmount,
+                'items_count' => $items->count(),
+                'last_added_to_cart' => $order->lastAddedCart,
+                'completed_order_exists' => $order->status == 'completed' ? true : false,
+                'completed_at' => $order->completed_at ?? null,  // added new key as 'completed_at'
+                'created_at' => $order->created_at,
+            ];
+        }
+
+        usort($orderData, function($a, $b) {
+            $aCompletedAt = $a['completed_at']; // use key "completed_at" instead of hitting api
+            $bCompletedAt = $b['completed_at'];
+            return strtotime($bCompletedAt) - strtotime($aCompletedAt);
+        });
+
+        return view('orders.index', ['orders' => $orderData]);
+    }
+}
+
+Question: How would you refactor it to improve its performance and efficiency, ensuring that the code is both optimized for database queries and maintains readability?
+Refactor the controller method, explain and suggest further improvements.
+Answer: 
+1. Instead of using lazyload method for customer and item function/relationship, use eager loading so multiple database queries can be reduced. 
+2. I suggest to create a relationship with CartItem model  named as "lastAddedCart" so it can be fetched altogether.
+3. $customer = $order->customer can be removed use "$order->customer->name" for name of customer
+4.  "$itemsCount = 0;" and "$itemsCount++;" can be removed use "$items->count()" instead
+5. No need for $completedOrderExists and related DB fetch query as it can be retrived from the "$order->status == 'completed' ? true : false" 
+6. usort functionality has been refactored
+
+Recommendations:
+1. Use of Service Class for keeping application logic separate from Controller
+2. Use of presentation/transformation class make use of Laravel make:resource or create own class 
+3. Use of pagination

@@ -1,0 +1,38 @@
+
+Question 5.A
+
+Schedule::command('app:example-command')
+        ->withoutOverlapping() // wait for previous command to be finish
+        ->hourly() // at every hour
+        ->onOneServer() // at a single server in case there are multiple servers
+        ->runInBackground(); // run as  background task
+
+Answer: Artisan command "app:example-command" will execute in every hour withoutOverlapping(it will wait for previous command to be finished before) on a single server to be run as backgrounf task
+
+Question 5.B What is the difference between the Context and Cache Facades? Provide examples to illustrate your explanation
+
+
+    Context Facade: is share and retrive information in request, jobs and commands.
+    context:add =>  use context:add for adding information in key and value  
+    context:get => use context:get for getting information  in key and value
+    We can use context:add to add information in logging. Create a middleware and in handle  function
+    public function handle(Request $request, Closure $next): Response
+    {
+        Context::add('url', $request->url());
+        Context::add('trace_id', Str::uuid()->toString());
+ 
+        return $next($request);
+    }
+
+
+    Question 5C: What's the difference between $query->update(), $model->update(), and $model->updateQuietly() in Laravel, and when would you use each?
+
+    Answer: 
+            $query->update(): Update using active record query
+            $model->update(): Update Model data using Eloquent, retrive a item to be updated, populate the field and calls save method, return true if successful or false 
+            $model->updateQuietly(): Does not trigger any observer after update.
+
+
+
+
+ 
